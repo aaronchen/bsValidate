@@ -1,4 +1,4 @@
-/*
+/**
  * jQuery Plugin - Bootstrap Validate (bsValidate)
  *
  * Requirements:
@@ -100,7 +100,7 @@
           clearTimeout(self._timeoutId);
           self._timeoutId = setTimeout(function () {
             onValid(self);
-          }, self.options.delay);
+          }, self.options.onValidDebounce);
         };
       }
     }
@@ -282,30 +282,48 @@
     });
   };
 
+  /**
+   * === bsValidate Options ===
+   * @param {Object} options - bsValidate options
+   * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
+   * @param {string} options.hint - Hint
+   * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
+   * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
+   * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
+   * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
+   * @param {function(BootstrapValidate): void} options.onReset - On `reset` callback
+   * @param {function(BootstrapValidate): void} options.onSubmit - On `submit` callback
+   * @param {function(BootstrapValidate): void} options.onValid - On valid `input` callback
+   * @param {number} options.onValidDebounce - Debounce for valid `input` callback (default: 750)
+   * @param {string} options.patternMismatchErrorMessage - Custom invalid message for pattern mismatch
+   * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
+   *
+   * === bsValidate Options As data-* Attributes ===
+   * data-auto-trim (bool)
+   * data-hint (string)
+   * data-hint-class (string)
+   * data-hint-on-focus (bool)
+   * data-on-blur (string)
+   * data-on-focus (string)
+   * data-on-reset (string)
+   * data-on-submit (string)
+   * data-on-valid (string)
+   * data-on-valid-debounce (number)
+   * data-pattern-mismatch-error-message (string)
+   * data-spinner-class (string)
+   */
   $.fn.bsValidate.defaults = {
-    // HTML attribute: data-auto-trim
     autoTrim: true,
-    // HTML attribute: data-delay
-    delay: 750,
-    // HTML attribute: data-hint
     hint: "",
-    // HTML attribute: data-hint-class
     hintClass: "text-muted",
-    // HTML attribute: data-hint-on-focus
     hintOnFocus: false,
-    // HTML attribute: data-on-blur
     onBlur: null,
-    // HTML attribute: data-on-focus
     onFocus: null,
-    // HTML attribute: data-on-reset
     onReset: null,
-    // HTML attribute: data-on-submit
     onSubmit: null,
-    // HTML attribute: data-on-valid
     onValid: null,
-    // HTML attribute: data-pattern-mismatch-error-message
+    onValidDebounce: 750,
     patternMismatchErrorMessage: "",
-    // HTML attribute: data-spinner-class
     spinnerClass: "text-primary",
   };
 
