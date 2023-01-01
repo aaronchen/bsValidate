@@ -26,6 +26,8 @@
       const self = this;
 
       self.$element.on("input", function () {
+        self.removeSpinner();
+
         self.reportValidity() &&
           self.onValid instanceof Function &&
           self.onValid();
@@ -96,6 +98,10 @@
 
     clear() {
       this.$element.val("");
+    }
+
+    val() {
+      return this.$element.val();
     }
 
     showHint() {
@@ -218,6 +224,21 @@
 
       return isValid;
     }
+
+    showSpinner() {
+      const top = this.$element.hasClass("form-control-sm") ? "-25px" : "-29px";
+      this.removeSpinner();
+      this.$element.after(`
+        <div class="form-text bs-spinner" style="line-height: 0;">
+          <div class="spinner-border spinner-border-sm ${this.options.spinnerClass} position-relative float-right"
+               style="height: .8rem; width: .8rem; top: ${top}; right: 16px;"></div>
+        </div>
+      `);
+    }
+
+    removeSpinner() {
+      this.$element.nextAll(".bs-spinner").remove();
+    }
   }
 
   $.fn.bsValidate = function (options) {
@@ -249,6 +270,8 @@
     patternMismatchErrorMessage: "",
     // HTML attribute: data-on-valid-input
     onValidInput: null,
+    // HTML attribute: data-spinner-class
+    spinnerClass: "text-primary",
   };
 
   $(function () {
