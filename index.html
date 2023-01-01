@@ -21,7 +21,7 @@
       $(document).on('submit', '#addUser', function (event) {
         event.preventDefault();
 
-        $('.bs-validate').trigger('validate');
+        $('.bs-validate').trigger('submit');
 
         if (this.checkValidity()) {
           console.log('this form is valid');
@@ -58,7 +58,7 @@
               <div class="col-10">
                 <input type="text" class="form-control bs-validate" name="firstName" id="firstName" minlength="5"
                   maxlength="40" data-hint="5 to 40 charcters required" data-hint-on-focus="true"
-                  data-on-valid-input="testRun" data-spinner-class="text-info" required />
+                  data-on-valid="testRun" data-spinner-class="text-info" required />
               </div>
             </div>
 

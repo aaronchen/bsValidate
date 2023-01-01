@@ -14,12 +14,16 @@
       this.options = options;
       this.$element = $(element);
       this.errors = [];
+      this.onBlur = this.toFunction(options.onBlur);
+      this.onFocus = this.toFunction(options.onFocus);
+      this.onReset = this.toFunction(options.onReset);
+      this.onSubmit = this.toFunction(options.onSubmit);
       this.onValid = null;
       this._timeoutId = null;
 
       this.addListeners();
       this.addHint();
-      this.wrapOnValidInput();
+      this.wrapOnValid();
     }
 
     addListeners() {
@@ -36,6 +40,12 @@
       self.$element.on("blur", function () {
         self.hideHint();
         self.removeInvalidFeedback();
+
+        if (self.options.autoTrim) {
+          self.trim();
+        }
+
+        self.onBlur instanceof Function && self.onBlur(self);
       });
 
       self.$element.on("focus", function () {
@@ -44,6 +54,8 @@
         if (self.hasErrors()) {
           self.addInvalidFeedback();
         }
+
+        self.onFocus instanceof Function && self.onFocus(self);
       });
 
       self.$element.on("reset", function (event) {
@@ -52,11 +64,18 @@
         self.resetErrors();
         self.hideHint();
         self.removeInvalidFeedback();
+        self.onReset instanceof Function && self.onReset(self);
       });
 
-      self.$element.on("validate", function (event) {
+      self.$element.on("submit", function (event) {
         event.stopImmediatePropagation();
+
+        if (self.options.autoTrim) {
+          self.trim();
+        }
+
         self.reportValidity();
+        self.onSubmit instanceof Function && self.onSubmit(self);
       });
     }
 
@@ -72,22 +91,24 @@
       }
     }
 
-    wrapOnValidInput() {
+    wrapOnValid() {
       const self = this;
-      const onValidInput = self.toFunction(self.options.onValidInput);
+      const onValid = self.toFunction(self.options.onValid);
 
-      if (onValidInput instanceof Function) {
+      if (onValid instanceof Function) {
         self.onValid = function () {
           clearTimeout(self._timeoutId);
           self._timeoutId = setTimeout(function () {
-            onValidInput(self);
+            onValid(self);
           }, self.options.delay);
         };
       }
     }
 
     toFunction(func) {
-      if (func instanceof Function) return func;
+      if (func instanceof Function) {
+        return func;
+      }
 
       if (typeof func === "string" && window[func] instanceof Function) {
         return window[func];
@@ -102,6 +123,10 @@
 
     val() {
       return this.$element.val();
+    }
+
+    trim() {
+      this.$element.val(this.$element.val().trim());
     }
 
     showHint() {
@@ -258,6 +283,8 @@
   };
 
   $.fn.bsValidate.defaults = {
+    // HTML attribute: data-auto-trim
+    autoTrim: true,
     // HTML attribute: data-delay
     delay: 750,
     // HTML attribute: data-hint
@@ -266,10 +293,18 @@
     hintClass: "text-muted",
     // HTML attribute: data-hint-on-focus
     hintOnFocus: false,
+    // HTML attribute: data-on-blur
+    onBlur: null,
+    // HTML attribute: data-on-focus
+    onFocus: null,
+    // HTML attribute: data-on-reset
+    onReset: null,
+    // HTML attribute: data-on-submit
+    onSubmit: null,
+    // HTML attribute: data-on-valid
+    onValid: null,
     // HTML attribute: data-pattern-mismatch-error-message
     patternMismatchErrorMessage: "",
-    // HTML attribute: data-on-valid-input
-    onValidInput: null,
     // HTML attribute: data-spinner-class
     spinnerClass: "text-primary",
   };
