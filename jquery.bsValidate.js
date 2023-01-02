@@ -24,6 +24,7 @@
       this.addListeners();
       this.addHint();
       this.wrapOnValid();
+      this.addHelpers();
     }
 
     addListeners() {
@@ -80,15 +81,17 @@
     }
 
     addHint() {
+      if (!this.options.hint) {
+        return;
+      }
+
       const hintVisibility = this.options.hintOnFocus ? "d-none" : "";
 
-      if (this.options.hint) {
-        this.$element.after(`
-          <div class="form-text ${this.options.hintClass} small ${hintVisibility} mb-0 bs-validate-hint">
-            ${this.options.hint}
-          </div>
-        `);
-      }
+      this.$element.after(`
+        <div class="form-text ${this.options.hintClass} small ${hintVisibility} mb-0 bs-validate-hint">
+          ${this.options.hint}
+        </div>
+      `);
     }
 
     wrapOnValid() {
@@ -102,6 +105,46 @@
             onValid(self);
           }, self.options.onValidDebounce);
         };
+      }
+    }
+
+    addHelpers() {
+      const self = this;
+
+      const helpers = {
+        maxLengthHelper: function () {
+          const maxLength = self.element.getAttribute("maxLength");
+
+          if (!maxLength) {
+            return;
+          }
+
+          const $maxLengthHelper = $(`
+            <div class="form-text text-info small d-none mb-0 bs-validate-helper" helper="maxLength">
+              <span class="length">${maxLength}</span> character(s) remaining...
+            </div>
+          `);
+
+          self.$element.after($maxLengthHelper);
+
+          self.$element.on("input helper:max-length", function () {
+            const currentLength = self.val().length ?? 0;
+            $maxLengthHelper.find(".length").text(maxLength - currentLength);
+          });
+
+          self.$element.on("focus", function () {
+            self.$element.trigger("helper:max-length");
+            $maxLengthHelper.removeClass("d-none");
+          });
+
+          self.$element.on("blur", function () {
+            $maxLengthHelper.addClass("d-none");
+          });
+        },
+      };
+
+      if (self.options?.maxLengthHelper) {
+        helpers.maxLengthHelper();
       }
     }
 
@@ -130,12 +173,12 @@
     }
 
     showHint() {
-      this.$element.next(".bs-validate-hint").removeClass("d-none");
+      this.$element.nextAll(".bs-validate-hint").removeClass("d-none");
     }
 
     hideHint() {
       if (this.options.hintOnFocus) {
-        this.$element.next(".bs-validate-hint").addClass("d-none");
+        this.$element.nextAll(".bs-validate-hint").addClass("d-none");
       }
     }
 
@@ -289,6 +332,7 @@
    * @param {string} options.hint - Hint
    * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
    * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
+   * @param {boolean} options.maxLengthHelper - Enable maxLength helper (default: false)
    * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
    * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
    * @param {function(BootstrapValidate): void} options.onReset - On `reset` callback
@@ -299,10 +343,11 @@
    * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
    *
    * === bsValidate Options As data-* Attributes ===
-   * data-auto-trim (bool)
+   * data-auto-trim (boolean)
    * data-hint (string)
    * data-hint-class (string)
-   * data-hint-on-focus (bool)
+   * data-hint-on-focus (boolean)
+   * data-max-length-helper (boolean)
    * data-on-blur (string)
    * data-on-focus (string)
    * data-on-reset (string)
@@ -317,6 +362,7 @@
     hint: "",
     hintClass: "text-muted",
     hintOnFocus: false,
+    maxLengthHelper: false,
     onBlur: null,
     onFocus: null,
     onReset: null,

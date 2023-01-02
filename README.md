@@ -8,6 +8,7 @@
   - `options.hint` — `string` — Hint
   - `options.hintClass` — `string` — Bootstrap class for displaying Hint (default: "text-muted")
   - `options.hintOnFocus` — `boolean` — Only show Hint on `focus` (default: false)
+  - `options.maxLengthHelper` — `boolean` — Enable maxLength helper (default: false)
   - `options.onBlur` — `function(BootstrapValidate): void` - On `blur` callback
   - `options.onFocus` — `function(BootstrapValidate): void` - On `focus` callback
   - `options.onReset` — `function(BootstrapValidate): void` - On `reset` callback
