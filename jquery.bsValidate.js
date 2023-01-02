@@ -6,6 +6,10 @@
  *   - Need to add `novalidate` attribute to form element in order to work with Bootstrap validation
  *   - Add `bs-validate` class to input element to automatically enable bsValidate
  *
+ * === bsValidate ====
+ *
+ * $(".bs-validate").bsValidate(options);
+ *
  * === bsValidate Options ===
  * @param {Object} options - bsValidate options
  * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
@@ -188,8 +192,18 @@
         return func;
       }
 
-      if (typeof func === "string" && window[func] instanceof Function) {
-        return window[func];
+      if (typeof func === "string") {
+        if (window[func] instanceof Function) {
+          return window[func];
+        }
+
+        if (func.includes(".")) {
+          try {
+            return func.split(".").reduce(function (obj, i) {
+              return obj[i];
+            }, window);
+          } catch (e) {}
+        }
       }
 
       return undefined;
