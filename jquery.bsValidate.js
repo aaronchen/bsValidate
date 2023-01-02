@@ -14,20 +14,20 @@
       this.options = options;
       this.$element = $(element);
       this.errors = [];
-      this.onBlur = this.toFunction(options.onBlur);
-      this.onFocus = this.toFunction(options.onFocus);
-      this.onReset = this.toFunction(options.onReset);
-      this.onSubmit = this.toFunction(options.onSubmit);
+      this.onBlur = this._toFunction(options.onBlur);
+      this.onFocus = this._toFunction(options.onFocus);
+      this.onReset = this._toFunction(options.onReset);
+      this.onSubmit = this._toFunction(options.onSubmit);
       this.onValid = null;
       this._timeoutId = null;
 
-      this.addListeners();
-      this.addHint();
-      this.wrapOnValid();
-      this.addHelpers();
+      this._addListeners();
+      this._addHint();
+      this._wrapOnValid();
+      this._addHelpers();
     }
 
-    addListeners() {
+    _addListeners() {
       const self = this;
 
       self.$element.on("input", function () {
@@ -80,7 +80,7 @@
       });
     }
 
-    addHint() {
+    _addHint() {
       if (!this.options.hint) {
         return;
       }
@@ -94,9 +94,9 @@
       `);
     }
 
-    wrapOnValid() {
+    _wrapOnValid() {
       const self = this;
-      const onValid = self.toFunction(self.options.onValid);
+      const onValid = self._toFunction(self.options.onValid);
 
       if (onValid instanceof Function) {
         self.onValid = function () {
@@ -108,7 +108,7 @@
       }
     }
 
-    addHelpers() {
+    _addHelpers() {
       const self = this;
 
       const helpers = {
@@ -148,7 +148,7 @@
       }
     }
 
-    toFunction(func) {
+    _toFunction(func) {
       if (func instanceof Function) {
         return func;
       }
@@ -170,6 +170,10 @@
 
     trim() {
       this.$element.val(this.$element.val().trim());
+    }
+
+    prop(propertyName, value) {
+      this.$element.prop(propertyName, value);
     }
 
     showHint() {
