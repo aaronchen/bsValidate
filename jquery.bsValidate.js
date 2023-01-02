@@ -294,12 +294,12 @@
     }
 
     showSpinner() {
-      const top = this.$element.hasClass("form-control-sm") ? "-25px" : "-29px";
+      const top = this.$element.hasClass("form-control-sm") ? "-21px" : "-25px";
       this.removeSpinner();
       this.$element.after(`
-        <div class="form-text bs-spinner" style="line-height: 0;">
-          <div class="spinner-border spinner-border-sm ${this.options.spinnerClass} position-relative float-right"
-               style="height: .8rem; width: .8rem; top: ${top}; right: 16px;"></div>
+        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: 16px; margin-top: ${top};">
+          <div class="spinner-border spinner-border-sm ${this.options.spinnerClass}"
+               style="height: .8rem; width: .8rem;"></div>
         </div>
       `);
     }
