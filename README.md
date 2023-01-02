@@ -1,10 +1,15 @@
 # bsValidate
 
+```javascript
+$(".bs-validate").bsValidate();
+```
+
 ## bsValidate Options
 
 - **Parameters:**
   - `options` — `Object`
   - `options.autoTrim` — `boolean` — Auto-trim input value (default: true)
+  - `options.helperClass` — `string` — Bootstrap class for displaying Helpers (default: "text-info")
   - `options.hint` — `string` — Hint
   - `options.hintClass` — `string` — Bootstrap class for displaying Hint (default: "text-muted")
   - `options.hintOnFocus` — `boolean` — Only show Hint on `focus` (default: false)

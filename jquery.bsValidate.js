@@ -120,7 +120,7 @@
           }
 
           const $maxLengthHelper = $(`
-            <div class="form-text text-info small d-none mb-0 bs-validate-helper" helper="maxLength">
+            <div class="form-text ${self.options.helperClass} small d-none mb-0 bs-validate-helper" helper="maxLength">
               <span class="length">${maxLength}</span> character(s) remaining...
             </div>
           `);
@@ -329,6 +329,7 @@
    * === bsValidate Options ===
    * @param {Object} options - bsValidate options
    * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
+   * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
    * @param {string} options.hint - Hint
    * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
    * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
@@ -344,6 +345,7 @@
    *
    * === bsValidate Options As data-* Attributes ===
    * data-auto-trim (boolean)
+   * data-helper-class (string)
    * data-hint (string)
    * data-hint-class (string)
    * data-hint-on-focus (boolean)
@@ -359,6 +361,7 @@
    */
   $.fn.bsValidate.defaults = {
     autoTrim: true,
+    helperClass: "text-info",
     hint: "",
     hintClass: "text-muted",
     hintOnFocus: false,
