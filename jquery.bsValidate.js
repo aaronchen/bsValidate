@@ -5,6 +5,39 @@
  *   - Bootstrap 4
  *   - Need to add `novalidate` attribute to form element in order to work with Bootstrap validation
  *   - Add `bs-validate` class to input element to automatically enable bsValidate
+ *
+ * === bsValidate Options ===
+ * @param {Object} options - bsValidate options
+ * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
+ * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
+ * @param {string} options.hint - Hint
+ * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
+ * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
+ * @param {boolean} options.maxLengthHelper - Enable maxLength helper (default: false)
+ * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
+ * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
+ * @param {function(BootstrapValidate): void} options.onReset - On `reset` callback
+ * @param {function(BootstrapValidate): void} options.onSubmit - On `submit` callback
+ * @param {function(BootstrapValidate): void} options.onValid - On valid `input` callback
+ * @param {number} options.onValidDebounce - Debounce for valid `input` callback (default: 750)
+ * @param {string} options.patternMismatchErrorMessage - Custom invalid message for pattern mismatch
+ * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
+ *
+ * === bsValidate Options As data-* Attributes ===
+ * data-auto-trim (boolean)
+ * data-helper-class (string)
+ * data-hint (string)
+ * data-hint-class (string)
+ * data-hint-on-focus (boolean)
+ * data-max-length-helper (boolean)
+ * data-on-blur (string)
+ * data-on-focus (string)
+ * data-on-reset (string)
+ * data-on-submit (string)
+ * data-on-valid (string)
+ * data-on-valid-debounce (number)
+ * data-pattern-mismatch-error-message (string)
+ * data-spinner-class (string)
  */
 
 (function ($) {
@@ -98,14 +131,16 @@
       const self = this;
       const onValid = self._toFunction(self.options.onValid);
 
-      if (onValid instanceof Function) {
-        self.onValid = function () {
-          clearTimeout(self._timeoutId);
-          self._timeoutId = setTimeout(function () {
-            onValid(self);
-          }, self.options.onValidDebounce);
-        };
+      if (onValid instanceof Function === false) {
+        return;
       }
+
+      self.onValid = function () {
+        clearTimeout(self._timeoutId);
+        self._timeoutId = setTimeout(function () {
+          onValid(self);
+        }, self.options.onValidDebounce);
+      };
     }
 
     _addHelpers() {
@@ -143,7 +178,7 @@
         },
       };
 
-      if (self.options?.maxLengthHelper) {
+      if (self.options.maxLengthHelper) {
         helpers.maxLengthHelper();
       }
     }
@@ -329,40 +364,6 @@
     });
   };
 
-  /**
-   * === bsValidate Options ===
-   * @param {Object} options - bsValidate options
-   * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
-   * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
-   * @param {string} options.hint - Hint
-   * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
-   * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
-   * @param {boolean} options.maxLengthHelper - Enable maxLength helper (default: false)
-   * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
-   * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
-   * @param {function(BootstrapValidate): void} options.onReset - On `reset` callback
-   * @param {function(BootstrapValidate): void} options.onSubmit - On `submit` callback
-   * @param {function(BootstrapValidate): void} options.onValid - On valid `input` callback
-   * @param {number} options.onValidDebounce - Debounce for valid `input` callback (default: 750)
-   * @param {string} options.patternMismatchErrorMessage - Custom invalid message for pattern mismatch
-   * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
-   *
-   * === bsValidate Options As data-* Attributes ===
-   * data-auto-trim (boolean)
-   * data-helper-class (string)
-   * data-hint (string)
-   * data-hint-class (string)
-   * data-hint-on-focus (boolean)
-   * data-max-length-helper (boolean)
-   * data-on-blur (string)
-   * data-on-focus (string)
-   * data-on-reset (string)
-   * data-on-submit (string)
-   * data-on-valid (string)
-   * data-on-valid-debounce (number)
-   * data-pattern-mismatch-error-message (string)
-   * data-spinner-class (string)
-   */
   $.fn.bsValidate.defaults = {
     autoTrim: true,
     helperClass: "text-info",
