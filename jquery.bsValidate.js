@@ -20,10 +20,11 @@
  * @param {boolean} options.maxLengthHelper - Enable maxLength helper (default: false)
  * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
  * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
+ * @param {function(BootstrapValidate): void} options.onInput - On `input` callback
  * @param {function(BootstrapValidate): void} options.onReset - On `reset` callback
  * @param {function(BootstrapValidate): void} options.onSubmit - On `submit` callback
  * @param {function(BootstrapValidate): void} options.onValid - On valid `input` callback
- * @param {number} options.onValidDebounce - Debounce for valid `input` callback (default: 750)
+ * @param {number} options.onValidDebounce - Debounce for valid `input` callback (default: 700)
  * @param {string} options.patternMismatchErrorMessage - Custom invalid message for pattern mismatch
  * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
  *
@@ -36,6 +37,7 @@
  * data-max-length-helper (boolean)
  * data-on-blur (string)
  * data-on-focus (string)
+ * data-on-input (string)
  * data-on-reset (string)
  * data-on-submit (string)
  * data-on-valid (string)
@@ -53,6 +55,7 @@
       this.errors = [];
       this.onBlur = this._toFunction(options.onBlur);
       this.onFocus = this._toFunction(options.onFocus);
+      this.onInput = this._toFunction(options.onInput);
       this.onReset = this._toFunction(options.onReset);
       this.onSubmit = this._toFunction(options.onSubmit);
       this.onValid = null;
@@ -69,6 +72,7 @@
 
       self.$element.on("input", function () {
         self.removeSpinner();
+        self.onInput instanceof Function && self.onInput(self);
 
         self.reportValidity() &&
           self.onValid instanceof Function &&
@@ -141,9 +145,11 @@
 
       self.onValid = function () {
         clearTimeout(self._timeoutId);
-        self._timeoutId = setTimeout(function () {
-          onValid(self);
-        }, self.options.onValidDebounce);
+        self._timeoutId = setTimeout(
+          onValid,
+          self.options.onValidDebounce,
+          self
+        );
       };
     }
 
@@ -387,10 +393,11 @@
     maxLengthHelper: false,
     onBlur: null,
     onFocus: null,
+    onInput: null,
     onReset: null,
     onSubmit: null,
     onValid: null,
-    onValidDebounce: 750,
+    onValidDebounce: 700,
     patternMismatchErrorMessage: "",
     spinnerClass: "text-primary",
   };
