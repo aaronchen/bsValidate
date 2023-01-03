@@ -168,7 +168,7 @@
           self.$element.on("helper:email-domain", function () {
             const email = self.val();
 
-            if (email && email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
+            if (!email || email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
               self.element.setCustomValidity("");
             } else {
               self.element.setCustomValidity(errorMessage);
