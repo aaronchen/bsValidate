@@ -9,6 +9,7 @@ $(".bs-validate").bsValidate();
 - **Parameters:**
   - `options` — `Object`
   - `options.autoTrim` — `boolean` — Auto-trim input value (default: true)
+  - `options.emailDomainHelper` — `boolean` — Enable Email Domain helper (default: false)
   - `options.helperClass` — `string` — Bootstrap class for displaying Helpers (default: "text-info")
   - `options.hint` — `string` — Hint
   - `options.hintClass` — `string` — Bootstrap class for displaying Hint (default: "text-muted")

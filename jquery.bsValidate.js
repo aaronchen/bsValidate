@@ -13,6 +13,7 @@
  * === bsValidate Options ===
  * @param {Object} options - bsValidate options
  * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
+ * @param {boolean} options.emailDomainHelper - Enable Email Domain helper (default: false)
  * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
  * @param {string} options.hint - Hint
  * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
@@ -30,6 +31,7 @@
  *
  * === bsValidate Options As data-* Attributes ===
  * data-auto-trim (boolean)
+ * data-email-domain-helper (boolean)
  * data-helper-class (string)
  * data-hint (string)
  * data-hint-class (string)
@@ -53,6 +55,7 @@
       this.options = options;
       this.$element = $(element);
       this.errors = [];
+      this.helperValidityEvents = [];
       this.onBlur = this._toFunction(options.onBlur);
       this.onFocus = this._toFunction(options.onFocus);
       this.onInput = this._toFunction(options.onInput);
@@ -157,6 +160,22 @@
       const self = this;
 
       const helpers = {
+        emailDomainHelper: function () {
+          const errorMessage = "is not ending with a valid TLD Domain";
+
+          self.addHelperValidityEvents("helper:email-domain");
+
+          self.$element.on("helper:email-domain", function () {
+            const email = self.val();
+
+            if (email && email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
+              self.element.setCustomValidity("");
+            } else {
+              self.element.setCustomValidity(errorMessage);
+              self.addError(errorMessage);
+            }
+          });
+        },
         maxLengthHelper: function () {
           const maxLength = self.element.getAttribute("maxLength");
 
@@ -187,6 +206,10 @@
           });
         },
       };
+
+      if (self.options.emailDomainHelper) {
+        helpers.emailDomainHelper();
+      }
 
       if (self.options.maxLengthHelper) {
         helpers.maxLengthHelper();
@@ -253,6 +276,20 @@
       this.errors = [];
     }
 
+    addHelperValidityEvents(event) {
+      this.helperValidityEvents.push(event);
+    }
+
+    triggerHelperValidityEvents() {
+      const self = this;
+
+      if (self.helperValidityEvents.length) {
+        self.helperValidityEvents.forEach(function (event) {
+          self.$element.trigger(event);
+        });
+      }
+    }
+
     addInvalidFeedback() {
       this.removeInvalidFeedback();
 
@@ -280,6 +317,7 @@
       const self = this;
 
       self.resetErrors();
+      self.triggerHelperValidityEvents();
 
       if (self.element.checkValidity()) {
         return true;
@@ -333,10 +371,6 @@
         self.addError("is required");
       }
 
-      if (!self.hasErrors()) {
-        self.addError("is not valid");
-      }
-
       return false;
     }
 
@@ -386,6 +420,7 @@
 
   $.fn.bsValidate.defaults = {
     autoTrim: true,
+    emailDomainHelper: false,
     helperClass: "text-info",
     hint: "",
     hintClass: "text-muted",
