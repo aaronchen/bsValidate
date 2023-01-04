@@ -73,54 +73,52 @@
     _addListeners() {
       const self = this;
 
-      self.$element.on("input", function () {
-        self.removeSpinner();
-        self.onInput instanceof Function && self.onInput(self);
+      self.$element.on({
+        input: function () {
+          self.removeSpinner();
+          self.onInput instanceof Function && self.onInput(self);
 
-        self.reportValidity() &&
-          self.onValid instanceof Function &&
-          self.onValid();
-      });
+          self.reportValidity() &&
+            self.onValid instanceof Function &&
+            self.onValid();
+        },
+        blur: function () {
+          self.hideHint();
+          self.removeInvalidFeedback();
 
-      self.$element.on("blur", function () {
-        self.hideHint();
-        self.removeInvalidFeedback();
+          if (self.options.autoTrim) {
+            self.trim();
+          }
 
-        if (self.options.autoTrim) {
-          self.trim();
-        }
+          self.onBlur instanceof Function && self.onBlur(self);
+        },
+        focus: function () {
+          self.showHint();
 
-        self.onBlur instanceof Function && self.onBlur(self);
-      });
+          if (self.hasErrors()) {
+            self.addInvalidFeedback();
+          }
 
-      self.$element.on("focus", function () {
-        self.showHint();
+          self.onFocus instanceof Function && self.onFocus(self);
+        },
+        reset: function (event) {
+          event.stopImmediatePropagation();
+          self.clear();
+          self.resetErrors();
+          self.hideHint();
+          self.removeInvalidFeedback();
+          self.onReset instanceof Function && self.onReset(self);
+        },
+        submit: function (event) {
+          event.stopImmediatePropagation();
 
-        if (self.hasErrors()) {
-          self.addInvalidFeedback();
-        }
+          if (self.options.autoTrim) {
+            self.trim();
+          }
 
-        self.onFocus instanceof Function && self.onFocus(self);
-      });
-
-      self.$element.on("reset", function (event) {
-        event.stopImmediatePropagation();
-        self.clear();
-        self.resetErrors();
-        self.hideHint();
-        self.removeInvalidFeedback();
-        self.onReset instanceof Function && self.onReset(self);
-      });
-
-      self.$element.on("submit", function (event) {
-        event.stopImmediatePropagation();
-
-        if (self.options.autoTrim) {
-          self.trim();
-        }
-
-        self.reportValidity();
-        self.onSubmit instanceof Function && self.onSubmit(self);
+          self.reportValidity();
+          self.onSubmit instanceof Function && self.onSubmit(self);
+        },
       });
     }
 
@@ -157,63 +155,8 @@
     }
 
     _addHelpers() {
-      const self = this;
-
-      const helpers = {
-        emailDomainHelper: function () {
-          const errorMessage = "is not ending with a valid TLD Domain";
-
-          self.addHelperValidityEvents("helper:email-domain");
-
-          self.$element.on("helper:email-domain", function () {
-            const email = self.val();
-
-            if (!email || email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
-              self.element.setCustomValidity("");
-            } else {
-              self.element.setCustomValidity(errorMessage);
-              self.addError(errorMessage);
-            }
-          });
-        },
-        maxLengthHelper: function () {
-          const maxLength = self.element.getAttribute("maxLength");
-
-          if (!maxLength) {
-            return;
-          }
-
-          const $maxLengthHelper = $(`
-            <div class="form-text ${self.options.helperClass} small d-none mb-0 bs-validate-helper" helper="maxLength">
-              <span class="length">${maxLength}</span> character(s) remaining...
-            </div>
-          `);
-
-          self.$element.after($maxLengthHelper);
-
-          self.$element.on("input helper:max-length", function () {
-            const currentLength = self.val().length ?? 0;
-            $maxLengthHelper.find(".length").text(maxLength - currentLength);
-          });
-
-          self.$element.on("focus", function () {
-            self.$element.trigger("helper:max-length");
-            $maxLengthHelper.removeClass("d-none");
-          });
-
-          self.$element.on("blur", function () {
-            $maxLengthHelper.addClass("d-none");
-          });
-        },
-      };
-
-      if (self.options.emailDomainHelper) {
-        helpers.emailDomainHelper();
-      }
-
-      if (self.options.maxLengthHelper) {
-        helpers.maxLengthHelper();
-      }
+      this.options.emailDomainHelper && Helpers.emailDomainHelper(this);
+      this.options.maxLengthHelper && Helpers.maxLengthHelper(this);
     }
 
     _toFunction(func) {
@@ -401,6 +344,54 @@
       this.$element.nextAll(".bs-spinner").remove();
     }
   }
+
+  const Helpers = {
+    emailDomainHelper: function (self) {
+      const errorMessage = "is not ending with a valid TLD Domain";
+
+      self.addHelperValidityEvents("helper:email-domain");
+
+      self.$element.on("helper:email-domain", function () {
+        const email = self.val();
+
+        if (!email || email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
+          self.element.setCustomValidity("");
+        } else {
+          self.element.setCustomValidity(errorMessage);
+          self.addError(errorMessage);
+        }
+      });
+    },
+    maxLengthHelper: function (self) {
+      const maxLength = self.element.getAttribute("maxLength");
+
+      if (!maxLength) {
+        return;
+      }
+
+      const $maxLengthHelper = $(`
+        <div class="form-text ${self.options.helperClass} small d-none mb-0 bs-validate-helper" helper="maxLength">
+          <span class="length">${maxLength}</span> character(s) remaining...
+        </div>
+      `);
+
+      self.$element.after($maxLengthHelper);
+
+      self.$element.on("input helper:max-length", function () {
+        const currentLength = self.val().length ?? 0;
+        $maxLengthHelper.find(".length").text(maxLength - currentLength);
+      });
+
+      self.$element.on("focus", function () {
+        self.$element.trigger("helper:max-length");
+        $maxLengthHelper.removeClass("d-none");
+      });
+
+      self.$element.on("blur", function () {
+        $maxLengthHelper.addClass("d-none");
+      });
+    },
+  };
 
   $.fn.bsValidate = function (options) {
     return this.each(function () {
