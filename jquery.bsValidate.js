@@ -155,8 +155,10 @@
     }
 
     _addHelpers() {
-      this.options.emailDomainHelper && Helpers.emailDomainHelper(this);
-      this.options.maxLengthHelper && Helpers.maxLengthHelper(this);
+      this.options.emailDomainHelper &&
+        BootstrapValidate.Helpers.emailDomainHelper(this);
+      this.options.maxLengthHelper &&
+        BootstrapValidate.Helpers.maxLengthHelper(this);
     }
 
     _toFunction(func) {
@@ -345,7 +347,7 @@
     }
   }
 
-  const Helpers = {
+  BootstrapValidate.Helpers = {
     emailDomainHelper: function (self) {
       const errorMessage = "is not ending with a valid TLD Domain";
 
