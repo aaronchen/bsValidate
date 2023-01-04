@@ -178,6 +178,12 @@
             }, window);
           } catch (e) {}
         }
+
+        try {
+          if (eval(`${func} instanceof Function`)) {
+            return eval(func);
+          }
+        } catch (e) {}
       }
 
       return undefined;
