@@ -23,9 +23,12 @@
 
         $('.bs-validate').trigger('submit');
 
-        if (this.checkValidity()) {
-          console.log('this form is valid');
+        if (!this.checkValidity()) {
+          return;
         }
+
+        alert('this form is valid');
+        this.reset();
       });
 
       $(document).on('reset', '#addUser', function (event) {
