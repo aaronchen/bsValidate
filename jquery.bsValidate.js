@@ -77,6 +77,7 @@
         input: function () {
           self.removeSpinner();
           self.onInput instanceof Function && self.onInput(self);
+          self._timeoutId && clearTimeout(self._timeoutId);
 
           self.reportValidity() &&
             self.onValid instanceof Function &&
@@ -355,11 +356,16 @@
 
   BootstrapValidate.Helpers = {
     emailDomainHelper: function (self) {
+      const helperEventName = "helper:email-domain";
       const errorMessage = "is not ending with a valid TLD Domain";
 
-      self.addHelperValidityEvents("helper:email-domain");
+      if (self.element.type !== "email") {
+        return;
+      }
 
-      self.$element.on("helper:email-domain", function () {
+      self.addHelperValidityEvents(helperEventName);
+
+      self.$element.on(helperEventName, function () {
         const email = self.val();
 
         if (!email || email.match(/.+?\.[a-zA-Z0-9]{2,}$/) !== null) {
@@ -371,6 +377,7 @@
       });
     },
     maxLengthHelper: function (self) {
+      const helperEventName = "helper:max-length";
       const maxLength = self.element.getAttribute("maxLength");
 
       if (!maxLength) {
@@ -385,13 +392,13 @@
 
       self.$element.after($maxLengthHelper);
 
-      self.$element.on("input helper:max-length", function () {
+      self.$element.on(`input ${helperEventName}`, function () {
         const currentLength = self.val().length ?? 0;
         $maxLengthHelper.find(".length").text(maxLength - currentLength);
       });
 
       self.$element.on("focus", function () {
-        self.$element.trigger("helper:max-length");
+        self.$element.trigger(helperEventName);
         $maxLengthHelper.removeClass("d-none");
       });
 

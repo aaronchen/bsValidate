@@ -36,7 +36,7 @@
       });
     });
 
-    const validators = {
+    const onValid = {
       firstName: function (el) {
         el.showSpinner();
         new Promise((resolve) => setTimeout(resolve, 3000))
@@ -46,7 +46,8 @@
           });
       }
     }
-    const outputValue = function (el) {
+
+    const outputValueToConsole = function (el) {
       console.log(el.val());
     }
   </script>
@@ -63,17 +64,17 @@
           <fieldset>
             <div class="form-group row">
               <label for="firstName" class="col-2 col-form-label">First Name</label>
-              <div class="col-10">
+              <div class="col">
                 <input type="text" class="form-control bs-validate" name="firstName" id="firstName" minlength="2"
                   maxlength="40" data-hint="2 to 40 charcters required" data-hint-on-focus="true"
-                  data-on-input="outputValue" data-on-valid="validators.firstName" data-spinner-class="text-info"
+                  data-on-input="outputValueToConsole" data-on-valid="onValid.firstName" data-spinner-class="text-info"
                   data-max-length-helper="true" required />
               </div>
             </div>
 
             <div class="form-group row">
               <label for="lastName" class="col-2 col-form-label">Last Name</label>
-              <div class="col-10">
+              <div class="col">
                 <input type="text" class="form-control bs-validate" name="lastName" id="lastName" minlength="2"
                   maxlength="40" data-hint="2 to 40 charcters required" data-max-length-helper="true" required />
               </div>
@@ -81,7 +82,7 @@
 
             <div class="form-group row">
               <label for="email" class="col-2 col-form-label">Email</label>
-              <div class="col-10">
+              <div class="col">
                 <input type="email" class="form-control bs-validate" name="email" id="email"
                   data-email-domain-helper="true" required />
               </div>
@@ -89,7 +90,7 @@
 
             <div class="form-group row">
               <label for="email" class="col-2 col-form-label">Age</label>
-              <div class="col-10">
+              <div class="col">
                 <input type="number" class="form-control bs-validate" name="age" id="age" min="18" max="65" step="1"
                   data-hint="Enter a number between 18 to 65 in steps of 1" required />
               </div>
