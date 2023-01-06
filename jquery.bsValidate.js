@@ -68,6 +68,7 @@
       this._addHint();
       this._wrapOnValid();
       this._addHelpers();
+
       this.toggleLabelRequired();
     }
 
@@ -331,9 +332,11 @@
 
     showSpinner() {
       const top = this.$element.hasClass("form-control-sm") ? "-21px" : "-25px";
+      const right = this.element.tagName === "INPUT" ? "16px" : "28px";
+
       this.removeSpinner();
       this.$element.after(`
-        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: 16px; margin-top: ${top};">
+        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}; margin-top: ${top};">
           <div class="spinner-border spinner-border-sm ${this.options.spinnerClass}"
                style="height: .8rem; width: .8rem;"></div>
         </div>
@@ -441,8 +444,10 @@
   };
 
   $.fn.bsValidate = function (options) {
+    const supportedTags = ["INPUT", "SELECT"];
+
     return this.each(function () {
-      if (this.tagName === "INPUT") {
+      if (supportedTags.includes(this.tagName)) {
         const htmlOptions = $(this).data() || {};
         const settings = $.extend(
           {},
