@@ -13,12 +13,12 @@
  * === bsValidate Options ===
  * @param {Object} options - bsValidate options
  * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
- * @param {boolean} options.emailDomainHelper - Enable Email Domain helper (default: false)
+ * @param {boolean} options.emailDomainHelper - Enable Email Domain helper [<input type="email"> only] (default: false)
  * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
  * @param {string} options.hint - Hint
  * @param {string} options.hintClass - Bootstrap class for displaying Hint (default: "text-muted")
  * @param {boolean} options.hintOnFocus - Only show Hint on `focus` (default: false)
- * @param {boolean} options.maxLengthHelper - Enable maxLength helper (default: false)
+ * @param {boolean} options.maxLengthHelper - Enable maxLength helper  [<input> only] (default: false)
  * @param {function(BootstrapValidate): void} options.onBlur - On `blur` callback
  * @param {function(BootstrapValidate): void} options.onFocus - On `focus` callback
  * @param {function(BootstrapValidate): void} options.onInput - On `input` callback
@@ -206,9 +206,13 @@
       const feedback = this.errors.reduce(function (messages, message) {
         return `${messages}<li>${message}</li>`;
       }, "");
+      const isInlineCheckboxClass =
+        this.$element.parent(".form-check-inline").length > 0
+          ? "mt-0 ml-2"
+          : "";
 
       this.$element.addClass("is-invalid").parent().append(`
-        <div class="invalid-feedback">
+        <div class="invalid-feedback ${isInlineCheckboxClass}">
           <ul class="list-unstyled mb-0">
             ${feedback}
           </ul>
@@ -391,12 +395,12 @@
 
   BootstrapValidate.Helpers = {
     emailDomainHelper: function (self) {
-      const helperEventName = "helper:email-domain";
-      const errorMessage = "is not ending with a valid TLD Domain";
-
       if (self.element.type !== "email") {
         return;
       }
+
+      const helperEventName = "helper:email-domain";
+      const errorMessage = "is not ending with a valid TLD Domain";
 
       self.addHelperValidityEvents(helperEventName);
 
@@ -412,6 +416,10 @@
       });
     },
     maxLengthHelper: function (self) {
+      if (self.element.tagName !== "INPUT") {
+        return;
+      }
+
       const helperEventName = "helper:max-length";
       const maxLength = self.element.getAttribute("maxLength");
 
@@ -444,10 +452,14 @@
   };
 
   $.fn.bsValidate = function (options) {
-    const supportedTags = ["INPUT", "SELECT"];
+    const supportedInputTypes = ["checkbox", "email", "number", "text"];
 
     return this.each(function () {
-      if (supportedTags.includes(this.tagName)) {
+      if (
+        (this.tagName === "INPUT" && supportedInputTypes.includes(this.type)) ||
+        this.tagName === "SELECT" ||
+        this.tagName === "TEXTAREA"
+      ) {
         const htmlOptions = $(this).data() || {};
         const settings = $.extend(
           {},

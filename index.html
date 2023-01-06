@@ -118,35 +118,35 @@
               </div>
             </div>
 
+
+
             <div class="form-group row">
-              <legend class="col-form-label col-2">Marital Status</legend>
+              <legend class="col-form-label col-2">Agree?</legend>
               <div class="col col-form-label">
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="married" id="married_yes" value="1">
-                  <label class="form-check-label" for="married_yes">
-                    Married
-                  </label>
-                </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="married" id="married_no" value="0">
-                  <label class="form-check-label" for="married_no">
-                    Not Married
-                  </label>
+                  <input class="form-check-input bs-validate" type="checkbox" name="agree1" id="agree1" value="1"
+                    required>
+                  <label class="form-check-label" for="agree1">Yes</label>
                 </div>
               </div>
             </div>
 
             <div class="form-group row">
-              <legend class="col-form-label col-2">Siblings</legend>
+              <legend class="col-form-label col-2">Agree?</legend>
               <div class="col col-form-label">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" name="siblings[]" id="siblings_brothers" value="1">
-                  <label class="form-check-label" for="inlineCheckbox1">Brothers</label>
+                  <input class="form-check-input bs-validate" type="checkbox" name="agree2" id="agree2" value="1"
+                    required>
+                  <label class="form-check-label" for="agree2">Yes</label>
                 </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" name="siblings[]" id="siblings_sisters" value="2">
-                  <label class="form-check-label" for="inlineCheckbox2">Sisters</label>
-                </div>
+              </div>
+            </div>
+
+            <div class="from-group row mb-4">
+              <label for="comments" class="col-2 col-form-label">Comments</label>
+              <div class="col">
+                <textarea class="form-control bs-validate" name="comments" id="comments" rows="5"
+                  data-on-input="outputValueToConsole" required></textarea>
               </div>
             </div>
 
