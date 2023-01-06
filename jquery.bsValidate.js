@@ -68,6 +68,7 @@
       this._addHint();
       this._wrapOnValid();
       this._addHelpers();
+      this.toggleLabelRequired();
     }
 
     _addListeners() {
@@ -190,56 +191,12 @@
       return undefined;
     }
 
-    clear() {
-      this.$element.val("");
-    }
-
-    val() {
-      return this.$element.val();
-    }
-
-    trim() {
-      this.$element.val(this.$element.val().trim());
-    }
-
-    prop(propertyName, value) {
-      this.$element.prop(propertyName, value);
-    }
-
-    showHint() {
-      this.$element.nextAll(".bs-validate-hint").removeClass("d-none");
-    }
-
-    hideHint() {
-      if (this.options.hintOnFocus) {
-        this.$element.nextAll(".bs-validate-hint").addClass("d-none");
-      }
-    }
-
     addError(message) {
       this.errors.push(message);
     }
 
-    hasErrors() {
-      return this.errors.length > 0;
-    }
-
-    resetErrors() {
-      this.errors = [];
-    }
-
     addHelperValidityEvents(event) {
       this.helperValidityEvents.push(event);
-    }
-
-    triggerHelperValidityEvents() {
-      const self = this;
-
-      if (self.helperValidityEvents.length) {
-        self.helperValidityEvents.forEach(function (event) {
-          self.$element.trigger(event);
-        });
-      }
     }
 
     addInvalidFeedback() {
@@ -256,13 +213,6 @@
           </ul>
         </div>
       `);
-    }
-
-    removeInvalidFeedback() {
-      this.$element
-        .removeClass("is-invalid")
-        .nextAll(".invalid-feedback")
-        .remove();
     }
 
     checkValidity() {
@@ -326,6 +276,39 @@
       return false;
     }
 
+    clear() {
+      this.$element.val("");
+    }
+
+    hasErrors() {
+      return this.errors.length > 0;
+    }
+
+    hideHint() {
+      if (this.options.hintOnFocus) {
+        this.$element.nextAll(".bs-validate-hint").addClass("d-none");
+      }
+    }
+
+    prop(propertyName, value) {
+      this.$element.prop(propertyName, value);
+
+      if (propertyName === "required") {
+        this.toggleLabelRequired();
+      }
+    }
+
+    removeInvalidFeedback() {
+      this.$element
+        .removeClass("is-invalid")
+        .nextAll(".invalid-feedback")
+        .remove();
+    }
+
+    removeSpinner() {
+      this.$element.nextAll(".bs-spinner").remove();
+    }
+
     reportValidity() {
       const isValid = this.checkValidity();
 
@@ -336,6 +319,14 @@
       }
 
       return isValid;
+    }
+
+    resetErrors() {
+      this.errors = [];
+    }
+
+    showHint() {
+      this.$element.nextAll(".bs-validate-hint").removeClass("d-none");
     }
 
     showSpinner() {
@@ -349,8 +340,49 @@
       `);
     }
 
-    removeSpinner() {
-      this.$element.nextAll(".bs-spinner").remove();
+    toggleLabelRequired() {
+      const isRequired = this.$element.prop("required");
+      let $label = this.$element.prev("label, legend");
+
+      if (!$label.length) {
+        $label = this.$element
+          .parents(".form-group, .form-row, .row")
+          .first()
+          .find("label, legend")
+          .first();
+      }
+
+      if (!$label.length && this.element.id) {
+        $label = $(`label[for="${this.element.id}"]`);
+      }
+
+      if (!$label.length) {
+        return;
+      }
+
+      if (isRequired) {
+        $label.addClass("required");
+      } else {
+        $label.removeClass("required");
+      }
+    }
+
+    triggerHelperValidityEvents() {
+      const self = this;
+
+      if (self.helperValidityEvents.length) {
+        self.helperValidityEvents.forEach(function (event) {
+          self.$element.trigger(event);
+        });
+      }
+    }
+
+    trim() {
+      this.$element.val(this.$element.val().trim());
+    }
+
+    val() {
+      return this.$element.val();
     }
   }
 
