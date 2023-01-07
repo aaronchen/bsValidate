@@ -12,6 +12,7 @@
  *
  * === bsValidate Options ===
  * @param {Object} options - bsValidate options
+ * @param {boolean} options.alphanumericHelper - Enable alphanumeric helper  [<input> only] (default: false)
  * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
  * @param {boolean} options.emailDomainHelper - Enable Email Domain helper [<input type="email"> only] (default: false)
  * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
@@ -30,6 +31,7 @@
  * @param {string} options.spinnerClass - Bootstrap class for displaying Spinner (default: "text-primary")
  *
  * === bsValidate Options As data-* Attributes ===
+ * data-alphanumeric-helper (boolean)
  * data-auto-trim (boolean)
  * data-email-domain-helper (boolean)
  * data-helper-class (string)
@@ -174,6 +176,8 @@
     }
 
     _addHelpers() {
+      this.options.alphanumericHelper &&
+        BootstrapValidate.Helpers.alphanumericHelper(this);
       this.options.emailDomainHelper &&
         BootstrapValidate.Helpers.emailDomainHelper(this);
       this.options.maxLengthHelper &&
@@ -436,6 +440,27 @@
   }
 
   BootstrapValidate.Helpers = {
+    alphanumericHelper: function (self) {
+      if (self.element.tagName !== "INPUT") {
+        return;
+      }
+
+      const helperEventName = "helper:alphanumeric";
+      const errorMessage = "is not alphanumeric characters only";
+
+      self.addHelperValidityEvents(helperEventName);
+
+      self.$element.on(helperEventName, function () {
+        const text = self.val();
+
+        if (!text || text.search(/[^a-zA-Z0-9]/) < 0) {
+          self.element.setCustomValidity("");
+        } else {
+          self.element.setCustomValidity(errorMessage);
+          self.addError(errorMessage);
+        }
+      });
+    },
     emailDomainHelper: function (self) {
       if (self.element.type !== "email") {
         return;
@@ -523,6 +548,7 @@
   };
 
   $.fn.bsValidate.defaults = {
+    alphanumericHelper: false,
     autoTrim: true,
     emailDomainHelper: false,
     helperClass: "text-info",
