@@ -7,6 +7,7 @@ $(".bs-validate").bsValidate();
 ## bsValidate Options
 
 - **Parameters:**
+
   - `options` — `Object`
   - `options.autoTrim` — `boolean` — Auto-trim input value (default: true)
   - `options.emailDomainHelper` — `boolean` — Enable Email Domain helper (default: false)
@@ -24,3 +25,7 @@ $(".bs-validate").bsValidate();
   - `options.onValidDebounce` — `number` — Debounce for valid `input` callback (default: 700)
   - `options.patternMismatchErrorMessage` — `string` — Custom invalid message for pattern mismatch
   - `options.spinnerClass` — `string` — Bootstrap class for displaying Spinner (default: "text-primary")
+
+  ## bsValidate Sample
+
+  [Sample][https://aaronchen.github.io/bsvalidate/]
