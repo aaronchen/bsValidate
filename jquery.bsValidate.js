@@ -106,6 +106,10 @@
 
           self.onFocus instanceof Function && self.onFocus(self);
         },
+        report: function (event) {
+          event.stopImmediatePropagation();
+          self.reportValidity();
+        },
         reset: function (event) {
           event.stopImmediatePropagation();
           self.clear();
@@ -125,6 +129,16 @@
           self.onSubmit instanceof Function && self.onSubmit(self);
         },
       });
+
+      if (self.element.type === "radio") {
+        self.$element.on("input", function () {
+          $(`[name="${self.element.name}"]`)
+            .not(self.$element)
+            .each(function () {
+              $(this).trigger("report");
+            });
+        });
+      }
     }
 
     _addHint() {
@@ -226,6 +240,15 @@
     addInvalidFeedback() {
       this.removeInvalidFeedback();
 
+      this.$element.addClass("is-invalid");
+
+      if (
+        this.element.type === "radio" &&
+        $(`[name="${this.element.name}"]`).last().get(0) !== this.element
+      ) {
+        return;
+      }
+
       const feedback = this.errors.reduce(function (messages, message) {
         return `${messages}<li>${message}</li>`;
       }, "");
@@ -234,7 +257,7 @@
           ? "mt-0 ml-2"
           : "";
 
-      this.$element.addClass("is-invalid").parent().append(`
+      this.$element.parent().append(`
         <div class="invalid-feedback ${isInlineCheckboxClass}">
           <ul class="list-unstyled mb-0">
             ${feedback}
@@ -471,7 +494,14 @@
   };
 
   $.fn.bsValidate = function (options) {
-    const supportedInputTypes = ["checkbox", "date", "email", "number", "text"];
+    const supportedInputTypes = [
+      "checkbox",
+      "date",
+      "email",
+      "number",
+      "radio",
+      "text",
+    ];
 
     return this.each(function () {
       if (
