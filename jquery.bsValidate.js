@@ -56,8 +56,9 @@
       this.element = element;
       this.options = options;
       this.$element = $(element);
+      this.customValidityEvents = [];
       this.errors = [];
-      this.helperValidityEvents = [];
+      this.$label = this._getLabel();
       this.onBlur = this._toFunction(options.onBlur);
       this.onFocus = this._toFunction(options.onFocus);
       this.onInput = this._toFunction(options.onInput);
@@ -66,7 +67,6 @@
       this.onValid = null;
       this._observer = null;
       this._timeoutId = null;
-      this._$label = this._getLabel();
 
       this._addListeners();
       this._addHint();
@@ -125,7 +125,7 @@
           event.stopImmediatePropagation();
 
           if (self.options.autoTrim) {
-            self.trim();
+            self.trim(false);
           }
 
           self.reportValidity();
@@ -177,13 +177,11 @@
     }
 
     _addHelpers() {
-      const self = this;
-
       Object.keys(BootstrapValidate.Helpers).forEach(function (helper) {
-        self.options[helper] && BootstrapValidate.Helpers[helper](self);
-      });
+        this.options[helper] && BootstrapValidate.Helpers[helper](this);
+      }, this);
 
-      self.options.autoTrim && BootstrapValidate.Helpers.minLengthHelper(self);
+      this.options.autoTrim && BootstrapValidate.Helpers.minLengthHelper(this);
     }
 
     _startObserver() {
@@ -192,19 +190,17 @@
     }
 
     _houseKeeping(mutations) {
-      const self = this;
-
       mutations.forEach(function (mutation) {
         switch (mutation.type) {
           case "attributes":
             switch (mutation.attributeName) {
               case "required":
-                self.toggleLabelRequired();
+                this.toggleLabelRequired();
                 break;
             }
             break;
         }
-      });
+      }, this);
     }
 
     _toFunction(func) {
@@ -253,12 +249,12 @@
       return $label.length ? $label : null;
     }
 
-    addError(message) {
-      this.errors.push(message);
+    addCustomValidityEvents(event) {
+      this.customValidityEvents.push(event);
     }
 
-    addHelperValidityEvents(event) {
-      this.helperValidityEvents.push(event);
+    addError(message) {
+      this.errors.push(message);
     }
 
     addInvalidFeedback() {
@@ -292,66 +288,64 @@
     }
 
     checkValidity() {
-      const self = this;
+      this.resetErrors();
+      this.triggerCustomValidityEvents();
 
-      self.resetErrors();
-      self.triggerHelperValidityEvents();
-
-      if (self.element.checkValidity()) {
+      if (this.element.checkValidity()) {
         return true;
       }
 
-      if (self.element.validity.badInput) {
-        self.addError(
-          self.element.type === "number"
+      if (this.element.validity.badInput) {
+        this.addError(
+          this.element.type === "number"
             ? "is not a valid number"
             : "is a bad input"
         );
       }
 
-      if (self.element.validity.patternMismatch) {
-        self.addError(
-          self.options.patternMismatchErrorMessage || "is not pattern-matched"
+      if (this.element.validity.patternMismatch) {
+        this.addError(
+          this.options.patternMismatchErrorMessage || "is not pattern-matched"
         );
       }
 
-      if (self.element.validity.rangeOverflow) {
-        self.addError(`is over the maximum value of ${self.element.max}`);
+      if (this.element.validity.rangeOverflow) {
+        this.addError(`is over the maximum value of ${this.element.max}`);
       }
 
-      if (self.element.validity.rangeUnderflow) {
-        self.addError(`is under the minimum value of ${self.element.min}`);
+      if (this.element.validity.rangeUnderflow) {
+        this.addError(`is under the minimum value of ${this.element.min}`);
       }
 
-      if (self.element.validity.stepMismatch) {
-        self.addError(`is not in the step of ${self.element.step}`);
+      if (this.element.validity.stepMismatch) {
+        this.addError(`is not in the step of ${this.element.step}`);
       }
 
-      if (self.element.validity.tooLong) {
-        self.addError(
-          `is over the maximum charcters of ${self.$element.attr("maxlength")}`
+      if (this.element.validity.tooLong) {
+        this.addError(
+          `is over the maximum charcters of ${this.$element.attr("maxlength")}`
         );
       }
 
       /**
        * `validity.tooShort` works only for user input. However, if `options.autoTrim` is enabled,
-       * input value is programming set by `Trim()` and  make `validity.tooShort` always ignored.
+       * input value is programming set by `trim()` and  make `validity.tooShort` always ignored.
        * To work around this, we'll use `minLengthHelper` instead when `options.autoTrim` is enabled.
        */
-      if (!self.options.autoTrim && self.element.validity.tooShort) {
-        self.addError(
-          `is under the minimum charcters of ${self.$element.attr("minlength")}`
+      if (!this.options.autoTrim && this.element.validity.tooShort) {
+        this.addError(
+          `is under the minimum charcters of ${this.$element.attr("minlength")}`
         );
       }
 
-      if (self.element.validity.typeMismatch) {
-        self.addError(
-          `is not a valid ${self.element.type.toUpperCase()} format`
+      if (this.element.validity.typeMismatch) {
+        this.addError(
+          `is not a valid ${this.element.type.toUpperCase()} format`
         );
       }
 
-      if (self.element.validity.valueMissing) {
-        self.addError("is required");
+      if (this.element.validity.valueMissing) {
+        this.addError("is required");
       }
 
       return false;
@@ -420,34 +414,32 @@
     }
 
     toggleLabelRequired() {
-      if (!this._$label) {
+      if (!this.$label) {
         return;
       }
 
       const isRequired = this.$element.prop("required");
 
       if (isRequired) {
-        this._$label.addClass("required");
+        this.$label.addClass("required");
       } else {
-        this._$label.removeClass("required");
+        this.$label.removeClass("required");
       }
     }
 
-    triggerHelperValidityEvents() {
-      const self = this;
-
-      if (!self.helperValidityEvents.length) {
+    triggerCustomValidityEvents() {
+      if (!this.customValidityEvents.length) {
         return;
       }
 
-      self.helperValidityEvents.forEach(function (event) {
-        self.$element.trigger(event);
-      });
+      this.customValidityEvents.forEach(function (event) {
+        this.$element.trigger(event);
+      }, this);
     }
 
-    trim() {
+    trim(checkValidity = true) {
       this.$element.val(this.$element.val().trim());
-      this.checkValidity();
+      checkValidity && this.checkValidity();
     }
 
     val() {
@@ -464,7 +456,7 @@
       const helperEventName = "helper:alphanumeric";
       const errorMessage = "is not alphanumeric characters only";
 
-      self.addHelperValidityEvents(helperEventName);
+      self.addCustomValidityEvents(helperEventName);
 
       self.$element.on(helperEventName, function () {
         const text = self.val();
@@ -485,7 +477,7 @@
       const helperEventName = "helper:email-domain";
       const errorMessage = "is not ending with a valid TLD Domain";
 
-      self.addHelperValidityEvents(helperEventName);
+      self.addCustomValidityEvents(helperEventName);
 
       self.$element.on(helperEventName, function () {
         const email = self.val();
@@ -547,7 +539,7 @@
       const helperEventName = "helper:min-length";
       const errorMessage = `is under the minimum charcters of ${minLength}`;
 
-      self.addHelperValidityEvents(helperEventName);
+      self.addCustomValidityEvents(helperEventName);
 
       self.$element.on(helperEventName, function () {
         const text = self.val();
