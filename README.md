@@ -28,4 +28,4 @@ $(".bs-validate").bsValidate();
 
   ## bsValidate Sample
 
-  [Sample][https://aaronchen.github.io/bsvalidate/]
+  [Sample](https://aaronchen.github.io/bsvalidate/)
