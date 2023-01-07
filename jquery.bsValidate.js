@@ -13,7 +13,7 @@
  * === bsValidate Options ===
  * @param {Object} options - bsValidate options
  * @param {boolean} options.alphanumericHelper - Enable alphanumeric helper  [<input> only] (default: false)
- * @param {boolean} options.autoTrim - Auto-trim input value (default: true)
+ * @param {boolean} options.autoTrim - Auto-trim input value. (default: true)
  * @param {boolean} options.emailDomainHelper - Enable Email Domain helper [<input type="email"> only] (default: false)
  * @param {string} options.helperClass - Bootstrap class for displaying Helpers (default: "text-info")
  * @param {string} options.hint - Hint
@@ -66,6 +66,7 @@
       this.onValid = null;
       this._observer = null;
       this._timeoutId = null;
+      this._$label = this._getLabel();
 
       this._addListeners();
       this._addHint();
@@ -176,12 +177,13 @@
     }
 
     _addHelpers() {
-      this.options.alphanumericHelper &&
-        BootstrapValidate.Helpers.alphanumericHelper(this);
-      this.options.emailDomainHelper &&
-        BootstrapValidate.Helpers.emailDomainHelper(this);
-      this.options.maxLengthHelper &&
-        BootstrapValidate.Helpers.maxLengthHelper(this);
+      const self = this;
+
+      Object.keys(BootstrapValidate.Helpers).forEach(function (helper) {
+        self.options[helper] && BootstrapValidate.Helpers[helper](self);
+      });
+
+      self.options.autoTrim && BootstrapValidate.Helpers.minLengthHelper(self);
     }
 
     _startObserver() {
@@ -233,6 +235,24 @@
       return undefined;
     }
 
+    _getLabel() {
+      let $label = this.$element.prev("label, legend");
+
+      if (!$label.length) {
+        $label = this.$element
+          .parents(".form-group, .form-row, .row")
+          .first()
+          .find("label, legend")
+          .first();
+      }
+
+      if (!$label.length && this.element.id) {
+        $label = $(`label[for="${this.element.id}"]`);
+      }
+
+      return $label.length ? $label : null;
+    }
+
     addError(message) {
       this.errors.push(message);
     }
@@ -257,7 +277,8 @@
         return `${messages}<li>${message}</li>`;
       }, "");
       const isInlineCheckboxClass =
-        this.$element.parent(".form-check-inline").length > 0
+        this.$element.parent(".form-check-inline, .custom-control-inline")
+          .length > 0
           ? "mt-0 ml-2"
           : "";
 
@@ -312,7 +333,12 @@
         );
       }
 
-      if (self.element.validity.tooShort) {
+      /**
+       * `validity.tooShort` works only for user input. However, if `options.autoTrim` is enabled,
+       * input value is programming set by `Trim()` and  make `validity.tooShort` always ignored.
+       * To work around this, we'll use `minLengthHelper` instead when `options.autoTrim` is enabled.
+       */
+      if (!self.options.autoTrim && self.element.validity.tooShort) {
         self.addError(
           `is under the minimum charcters of ${self.$element.attr("minlength")}`
         );
@@ -394,44 +420,34 @@
     }
 
     toggleLabelRequired() {
-      const isRequired = this.$element.prop("required");
-      let $label = this.$element.prev("label, legend");
-
-      if (!$label.length) {
-        $label = this.$element
-          .parents(".form-group, .form-row, .row")
-          .first()
-          .find("label, legend")
-          .first();
-      }
-
-      if (!$label.length && this.element.id) {
-        $label = $(`label[for="${this.element.id}"]`);
-      }
-
-      if (!$label.length) {
+      if (!this._$label) {
         return;
       }
 
+      const isRequired = this.$element.prop("required");
+
       if (isRequired) {
-        $label.addClass("required");
+        this._$label.addClass("required");
       } else {
-        $label.removeClass("required");
+        this._$label.removeClass("required");
       }
     }
 
     triggerHelperValidityEvents() {
       const self = this;
 
-      if (self.helperValidityEvents.length) {
-        self.helperValidityEvents.forEach(function (event) {
-          self.$element.trigger(event);
-        });
+      if (!self.helperValidityEvents.length) {
+        return;
       }
+
+      self.helperValidityEvents.forEach(function (event) {
+        self.$element.trigger(event);
+      });
     }
 
     trim() {
       this.$element.val(this.$element.val().trim());
+      this.checkValidity();
     }
 
     val() {
@@ -502,18 +518,46 @@
 
       self.$element.after($maxLengthHelper);
 
-      self.$element.on(`input ${helperEventName}`, function () {
-        const currentLength = self.val().length ?? 0;
-        $maxLengthHelper.find(".length").text(maxLength - currentLength);
+      self.$element.on({
+        [`input ${helperEventName}`]: function () {
+          const currentLength = self.val().length ?? 0;
+          $maxLengthHelper.find(".length").text(maxLength - currentLength);
+        },
+        focus: function () {
+          self.$element.trigger(helperEventName);
+          $maxLengthHelper.removeClass("d-none");
+        },
+        blur: function () {
+          $maxLengthHelper.addClass("d-none");
+        },
       });
+    },
+    minLengthHelper: function (self) {
+      if (self.element.tagName !== "INPUT") {
+        return;
+      }
 
-      self.$element.on("focus", function () {
-        self.$element.trigger(helperEventName);
-        $maxLengthHelper.removeClass("d-none");
-      });
+      const minLength = self.element.getAttribute("minLength");
 
-      self.$element.on("blur", function () {
-        $maxLengthHelper.addClass("d-none");
+      if (!minLength) {
+        return;
+      }
+
+      const regex = new RegExp(`.{${minLength},}`);
+      const helperEventName = "helper:min-length";
+      const errorMessage = `is under the minimum charcters of ${minLength}`;
+
+      self.addHelperValidityEvents(helperEventName);
+
+      self.$element.on(helperEventName, function () {
+        const text = self.val();
+
+        if (!text || text.match(regex) !== null) {
+          self.element.setCustomValidity("");
+        } else {
+          self.element.setCustomValidity(errorMessage);
+          self.addError(errorMessage);
+        }
       });
     },
   };
