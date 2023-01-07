@@ -62,12 +62,14 @@
       this.onReset = this._toFunction(options.onReset);
       this.onSubmit = this._toFunction(options.onSubmit);
       this.onValid = null;
+      this._observer = null;
       this._timeoutId = null;
 
       this._addListeners();
       this._addHint();
       this._wrapOnValid();
       this._addHelpers();
+      this._startObserver();
 
       this.toggleLabelRequired();
     }
@@ -162,6 +164,27 @@
         BootstrapValidate.Helpers.emailDomainHelper(this);
       this.options.maxLengthHelper &&
         BootstrapValidate.Helpers.maxLengthHelper(this);
+    }
+
+    _startObserver() {
+      this._observer = new MutationObserver(this._houseKeeping.bind(this));
+      this._observer.observe(this.element, { attributeFilter: ["required"] });
+    }
+
+    _houseKeeping(mutations) {
+      const self = this;
+
+      mutations.forEach(function (mutation) {
+        switch (mutation.type) {
+          case "attributes":
+            switch (mutation.attributeName) {
+              case "required":
+                self.toggleLabelRequired();
+                break;
+            }
+            break;
+        }
+      });
     }
 
     _toFunction(func) {
@@ -297,10 +320,6 @@
 
     prop(propertyName, value) {
       this.$element.prop(propertyName, value);
-
-      if (propertyName === "required") {
-        this.toggleLabelRequired();
-      }
     }
 
     removeInvalidFeedback() {
@@ -452,7 +471,7 @@
   };
 
   $.fn.bsValidate = function (options) {
-    const supportedInputTypes = ["checkbox", "email", "number", "text"];
+    const supportedInputTypes = ["checkbox", "date", "email", "number", "text"];
 
     return this.each(function () {
       if (
