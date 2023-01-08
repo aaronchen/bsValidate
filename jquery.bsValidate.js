@@ -56,19 +56,29 @@
       this.element = element;
       this.options = options;
       this.$element = $(element);
+
       this.customValidityEvents = [];
       this.errors = [];
-      this.$label = this._getLabel();
+
       this.onBlur = this._toFunction(options.onBlur);
       this.onFocus = this._toFunction(options.onFocus);
       this.onInput = this._toFunction(options.onInput);
       this.onReset = this._toFunction(options.onReset);
       this.onSubmit = this._toFunction(options.onSubmit);
       this.onValid = null;
+
+      this.isInputGroup = false;
+      this.$after = null;
+      this.$label = null;
+      this.$spinner = null;
+
       this._observer = null;
       this._timeoutId = null;
 
       this._addListeners();
+      this._checkInputGroup();
+      this._setAfter();
+      this._setLabel();
       this._addHint();
       this._wrapOnValid();
       this._addHelpers();
@@ -118,6 +128,7 @@
           self.clear();
           self.resetErrors();
           self.hideHint();
+          self.removeSpinner();
           self.removeInvalidFeedback();
           self.onReset instanceof Function && self.onReset(self);
         },
@@ -144,6 +155,32 @@
       }
     }
 
+    _checkInputGroup() {
+      this.isInputGroup = this.$element.parent(".input-group").length > 0;
+    }
+
+    _setAfter() {
+      this.$after = this.isInputGroup ? this.$element.parent() : this.$element;
+    }
+
+    _setLabel() {
+      let $label = this.$element.prev("label, legend");
+
+      if (!$label.length) {
+        $label = this.$element
+          .parents(".form-group, .form-row, .row")
+          .first()
+          .find("label, legend")
+          .first();
+      }
+
+      if (!$label.length && this.element.id) {
+        $label = $(`label[for="${this.element.id}"]`);
+      }
+
+      this.$label = $label;
+    }
+
     _addHint() {
       if (!this.options.hint) {
         return;
@@ -151,7 +188,7 @@
 
       const hintVisibility = this.options.hintOnFocus ? "d-none" : "";
 
-      this.$element.after(`
+      this.$after.after(`
         <div class="form-text ${this.options.hintClass} small ${hintVisibility} mb-0 bs-validate-hint">
           ${this.options.hint}
         </div>
@@ -231,24 +268,6 @@
       return undefined;
     }
 
-    _getLabel() {
-      let $label = this.$element.prev("label, legend");
-
-      if (!$label.length) {
-        $label = this.$element
-          .parents(".form-group, .form-row, .row")
-          .first()
-          .find("label, legend")
-          .first();
-      }
-
-      if (!$label.length && this.element.id) {
-        $label = $(`label[for="${this.element.id}"]`);
-      }
-
-      return $label.length ? $label : null;
-    }
-
     addCustomValidityEvents(event) {
       this.customValidityEvents.push(event);
     }
@@ -261,7 +280,9 @@
       this.removeInvalidFeedback();
 
       this.$element.addClass("is-invalid");
+      this.isInputGroup && this.$after.addClass("is-invalid");
 
+      /* Invalid feedback should only be applied to the last Radio element */
       if (
         this.element.type === "radio" &&
         $(`[name="${this.element.name}"]`).last().get(0) !== this.element
@@ -278,7 +299,7 @@
           ? "mt-0 ml-2"
           : "";
 
-      this.$element.parent().append(`
+      this.$after.nextAll().addBack().last().after(`
         <div class="invalid-feedback ${isInlineCheckboxClass}">
           <ul class="list-unstyled mb-0">
             ${feedback}
@@ -361,7 +382,7 @@
 
     hideHint() {
       if (this.options.hintOnFocus) {
-        this.$element.nextAll(".bs-validate-hint").addClass("d-none");
+        this.$after.nextAll(".bs-validate-hint").addClass("d-none");
       }
     }
 
@@ -370,14 +391,13 @@
     }
 
     removeInvalidFeedback() {
-      this.$element
-        .removeClass("is-invalid")
-        .nextAll(".invalid-feedback")
-        .remove();
+      this.$element.removeClass("is-invalid");
+      this.isInputGroup && this.$after.removeClass("is-invalid");
+      this.$after.nextAll(".invalid-feedback").remove();
     }
 
     removeSpinner() {
-      this.$element.nextAll(".bs-spinner").remove();
+      this.$spinner?.remove();
     }
 
     reportValidity() {
@@ -397,7 +417,7 @@
     }
 
     showHint() {
-      this.$element.nextAll(".bs-validate-hint").removeClass("d-none");
+      this.$after.nextAll(".bs-validate-hint").removeClass("d-none");
     }
 
     showSpinner() {
@@ -409,27 +429,34 @@
 
       let top = -1 - this.$element.height();
       let right = 16;
+      let zIndex = this.element.style.zIndex + 3;
+
+      if (this.isInputGroup) {
+        right += this.$element.next(".input-group-append").width();
+      }
 
       if (this.element.tagName === "TEXTAREA") {
         top = 12 - this.$element.outerHeight();
       }
 
       if (this.element.tagName === "SELECT") {
-        right = 28;
+        right += 12;
       } else if (this.element.type === "date") {
-        right = 36;
+        right += 20;
       }
 
-      this.$element.after(`
-        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}px; margin-top: ${top}px;">
+      this.$spinner = $(`
+        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}px; margin-top: ${top}px; z-index: ${zIndex};">
           <div class="spinner-border spinner-border-sm ${this.options.spinnerClass}"
                style="height: .8rem; width: .8rem;"></div>
         </div>
       `);
+
+      this.$after.after(this.$spinner);
     }
 
     toggleLabelRequired() {
-      if (!this.$label) {
+      if (!this.$label?.length) {
         return;
       }
 
@@ -523,7 +550,7 @@
         </div>
       `);
 
-      self.$element.after($maxLengthHelper);
+      self.$after.after($maxLengthHelper);
 
       self.$element.on({
         [`input ${helperEventName}`]: function () {
