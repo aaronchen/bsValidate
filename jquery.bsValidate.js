@@ -446,7 +446,8 @@
       }
 
       this.$spinner = $(`
-        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}px; margin-top: ${top}px; z-index: ${zIndex};">
+        <div class="form-text bs-spinner position-relative float-right"
+             style="line-height: 0; right: ${right}px; margin-top: ${top}px; z-index: ${zIndex};">
           <div class="spinner-border spinner-border-sm ${this.options.spinnerClass}"
                style="height: .8rem; width: .8rem;"></div>
         </div>
