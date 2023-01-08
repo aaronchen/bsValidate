@@ -401,12 +401,27 @@
     }
 
     showSpinner() {
-      const top = this.$element.hasClass("form-control-sm") ? "-21px" : "-25px";
-      const right = this.element.tagName === "INPUT" ? "16px" : "28px";
+      if (["checkbox", "radio"].includes(this.element.type)) {
+        return;
+      }
 
       this.removeSpinner();
+
+      let top = -1 - this.$element.height();
+      let right = 16;
+
+      if (this.element.tagName === "TEXTAREA") {
+        top = 12 - this.$element.outerHeight();
+      }
+
+      if (this.element.tagName === "SELECT") {
+        right = 28;
+      } else if (this.element.type === "date") {
+        right = 36;
+      }
+
       this.$element.after(`
-        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}; margin-top: ${top};">
+        <div class="form-text bs-spinner position-relative float-right" style="line-height: 0; right: ${right}px; margin-top: ${top}px;">
           <div class="spinner-border spinner-border-sm ${this.options.spinnerClass}"
                style="height: .8rem; width: .8rem;"></div>
         </div>
