@@ -31,7 +31,7 @@
       $(document).on('submit', '#addUser', function (event) {
         event.preventDefault();
 
-        $('.bs-validate').trigger('submit');
+        $(this).find('.bs-validate').trigger('submit');
 
         if (!this.checkValidity()) {
           return;
@@ -42,7 +42,7 @@
       });
 
       $(document).on('reset', '#addUser', function (event) {
-        $('.bs-validate').trigger('reset');
+        $(this).find('.bs-validate').trigger('reset');
       });
     });
 
