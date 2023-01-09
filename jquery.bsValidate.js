@@ -98,7 +98,7 @@
 
           self.reportValidity() &&
             self.onValid instanceof Function &&
-            self.onValid();
+            self.onValid(self);
         },
         blur: function () {
           self.hideHint();
@@ -203,7 +203,7 @@
         return;
       }
 
-      self.onValid = function () {
+      self.onValid = function (self) {
         clearTimeout(self._timeoutId);
         self._timeoutId = setTimeout(
           onValid,
