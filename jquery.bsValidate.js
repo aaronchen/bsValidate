@@ -68,6 +68,7 @@
       this.onValid = null;
 
       this.isInputGroup = false;
+      this.isFormCheck = false;
       this.$after = null;
       this.$label = null;
       this.$spinner = null;
@@ -76,7 +77,7 @@
       this._timeoutId = null;
 
       this._addListeners();
-      this._checkInputGroup();
+      this._checkFlags();
       this._setAfter();
       this._setLabel();
       this._addHint();
@@ -155,8 +156,9 @@
       }
     }
 
-    _checkInputGroup() {
+    _checkFlags() {
       this.isInputGroup = this.$element.parent(".input-group").length > 0;
+      this.isFormCheck = ["checkbox", "radio"].includes(this.element.type);
     }
 
     _setAfter() {
@@ -174,7 +176,7 @@
           .first();
       }
 
-      if (!$label.length && this.element.id) {
+      if (!$label.length && this.element.id && !this.isFormCheck) {
         $label = $(`label[for="${this.element.id}"]`);
       }
 
@@ -421,7 +423,7 @@
     }
 
     showSpinner() {
-      if (["checkbox", "radio"].includes(this.element.type)) {
+      if (this.isFormCheck) {
         return;
       }
 
